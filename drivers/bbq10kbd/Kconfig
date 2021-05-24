@@ -1,0 +1,5 @@
+menuconfig BBQ10KBD
+	bool "BBQ10KBD keyboard"
+	depends on I2C
+	help
+	  Enable driver for BBQ10KBD I2C-based keyboard.
