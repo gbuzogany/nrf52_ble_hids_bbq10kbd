@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../../ncs/zephyr"
+		}
+	],
+	"settings": {
+		"kconfig.root": "/Users/gbuzogany/Projects/electronics/nordic-dev/workspace/bb_kb/Kconfig"
+	}
+}
