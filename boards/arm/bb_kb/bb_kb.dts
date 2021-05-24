@@ -57,6 +57,12 @@
 	status = "okay";
 	sda-pin = <8>; // 8, 6, 4
 	scl-pin = <6>;
+
+	bbq10kbd@1f {
+        compatible = "solderparty,bbq10kbd";
+        label = "bbq10kbd";
+        reg = <0x1f>;
+    };
 };
 
 &flash0 {
