@@ -12,6 +12,8 @@
 #include <sys/byteorder.h>
 #include <zephyr.h>
 #include <drivers/gpio.h>
+#include <drivers/kscan.h>
+#include <drivers/sensor.h>
 #include <soc.h>
 #include <assert.h>
 #include <spinlock.h>
@@ -326,8 +328,8 @@ static struct bt_conn_cb conn_callbacks = {
 
 static void caps_lock_handler(const struct bt_hids_rep *rep)
 {
-	uint8_t report_val = ((*rep->data) & OUTPUT_REPORT_BIT_MASK_CAPS_LOCK) ?
-			  1 : 0;
+	// uint8_t report_val = ((*rep->data) & OUTPUT_REPORT_BIT_MASK_CAPS_LOCK) ?
+			//   1 : 0;
 	// dk_set_led(LED_CAPS_LOCK, report_val);
 }
 
@@ -752,30 +754,6 @@ static int hid_buttons_release(const uint8_t *keys, size_t cnt)
 }
 
 
-static void button_text_changed(bool down)
-{
-	static const uint8_t *chr = hello_world_str;
-
-	if (down) {
-		hid_buttons_press(chr, 1);
-	} else {
-		hid_buttons_release(chr, 1);
-		if (++chr == (hello_world_str + sizeof(hello_world_str))) {
-			chr = hello_world_str;
-		}
-	}
-}
-
-
-static void button_shift_changed(bool down)
-{
-	if (down) {
-		hid_buttons_press(shift_key, 1);
-	} else {
-		hid_buttons_release(shift_key, 1);
-	}
-}
-
 
 static void num_comp_reply(bool accept)
 {
@@ -802,46 +780,6 @@ static void num_comp_reply(bool accept)
 		k_work_submit(&pairing_work);
 	}
 }
-
-
-static void button_changed(uint32_t button_state, uint32_t has_changed)
-{
-	// static bool pairing_button_pressed;
-
-	// uint32_t buttons = button_state & has_changed;
-
-	// if (k_msgq_num_used_get(&mitm_queue)) {
-	// 	if (buttons & KEY_PAIRING_ACCEPT) {
-	// 		pairing_button_pressed = true;
-	// 		num_comp_reply(true);
-
-	// 		return;
-	// 	}
-
-	// 	if (buttons & KEY_PAIRING_REJECT) {
-	// 		pairing_button_pressed = true;
-	// 		num_comp_reply(false);
-
-	// 		return;
-	// 	}
-	// }
-
-	// /* Do not take any action if the pairing button is released. */
-	// if (pairing_button_pressed &&
-	//     (has_changed & (KEY_PAIRING_ACCEPT | KEY_PAIRING_REJECT))) {
-	// 	pairing_button_pressed = false;
-
-	// 	return;
-	// }
-
-	// if (has_changed & KEY_TEXT_MASK) {
-	// 	button_text_changed((button_state & KEY_TEXT_MASK) != 0);
-	// }
-	// if (has_changed & KEY_SHIFT_MASK) {
-	// 	button_shift_changed((button_state & KEY_SHIFT_MASK) != 0);
-	// }
-}
-
 
 static void configure_gpio(void)
 {
@@ -876,11 +814,19 @@ static void bas_notify(void)
 void main(void)
 {
 	int err;
-	int blink_status = 0;
 
 	printk("Starting Bluetooth Peripheral HIDS keyboard example\n");
 
 	configure_gpio();
+
+
+	const struct device* kb = device_get_binding("BBQ10KBD");
+	if (kb == NULL)
+	{
+		printk("Failed to get KB device binding\n");
+	}
+
+	// LOG_INF("device is %p, name is %s", kb, log_strdup(kb->name));
 
 	bt_conn_cb_register(&conn_callbacks);
 	bt_conn_auth_cb_register(&conn_auth_callbacks);
@@ -898,6 +844,13 @@ void main(void)
 	if (IS_ENABLED(CONFIG_SETTINGS)) {
 		settings_load();
 	}
+
+
+	struct sensor_value temp;
+	sensor_sample_fetch(kb);
+	sensor_channel_get(kb, SENSOR_CHAN_AMBIENT_TEMP, &temp);
+	printk("temp: %d.%06d\n",
+		      temp.val1, temp.val2);
 
 	advertising_start();
 

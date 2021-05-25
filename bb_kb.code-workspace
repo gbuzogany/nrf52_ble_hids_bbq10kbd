@@ -8,6 +8,14 @@
 		}
 	],
 	"settings": {
-		"kconfig.root": "/Users/gbuzogany/Projects/electronics/nordic-dev/workspace/bb_kb/Kconfig"
+		"kconfig.root": "/Users/gbuzogany/Projects/electronics/nordic-dev/workspace/bb_kb/Kconfig",
+		"files.associations": {
+			"optional": "c",
+			"random": "c",
+			"stdexcept": "c",
+			"functional": "c",
+			"type_traits": "c",
+			"device.h": "c"
+		}
 	}
 }

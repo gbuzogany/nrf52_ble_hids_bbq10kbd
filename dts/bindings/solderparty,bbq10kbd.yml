@@ -1,0 +1,14 @@
+
+include: [kscan.yaml, i2c-device.yaml]
+
+compatible: "solderparty,bbq10kbd"
+
+on-bus: i2c
+
+properties:
+    reg:
+      required: true
+    label:
+      required: true
+    interrupts:
+      required: true
