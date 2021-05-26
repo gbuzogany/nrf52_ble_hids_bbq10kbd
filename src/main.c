@@ -12,8 +12,8 @@
 #include <sys/byteorder.h>
 #include <zephyr.h>
 #include <drivers/gpio.h>
-#include <drivers/kscan.h>
 #include <drivers/sensor.h>
+#include <drivers/keyboard.h>
 #include <soc.h>
 #include <assert.h>
 #include <spinlock.h>
@@ -824,6 +824,8 @@ void main(void)
 	{
 		printk("Failed to get KB device binding\n");
 	}
+
+	keyboard_set_backlight(kb, 0x01);
 
 	// LOG_INF("device is %p, name is %s", kb, log_strdup(kb->name));
 
