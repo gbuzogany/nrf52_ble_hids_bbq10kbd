@@ -47,13 +47,14 @@
 &i2c1 {
 	compatible = "nordic,nrf-twi";
 	status = "okay";
-	sda-pin = <8>; // 8, 6, 4
+	sda-pin = <8>;
 	scl-pin = <6>;
 
 	bbq10kbd@1f {
         compatible = "solderparty,bbq10kbd";
 		reg = <0x1f>;
         label = "BBQ10KBD";
+		int1-gpios = <&gpio0 4 (GPIO_PULL_UP | GPIO_ACTIVE_LOW)>;
     };
 };
 
