@@ -819,7 +819,6 @@ void main(void)
 
 	configure_gpio();
 
-
 	const struct device* kb = device_get_binding("BBQ10KBD");
 	if (kb == NULL)
 	{
@@ -844,13 +843,6 @@ void main(void)
 	if (IS_ENABLED(CONFIG_SETTINGS)) {
 		settings_load();
 	}
-
-
-	struct sensor_value temp;
-	sensor_sample_fetch(kb);
-	sensor_channel_get(kb, SENSOR_CHAN_AMBIENT_TEMP, &temp);
-	printk("temp: %d.%06d\n",
-		      temp.val1, temp.val2);
 
 	advertising_start();
 

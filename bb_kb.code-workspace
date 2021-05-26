@@ -15,7 +15,8 @@
 			"stdexcept": "c",
 			"functional": "c",
 			"type_traits": "c",
-			"device.h": "c"
+			"device.h": "c",
+			"gpio.h": "c"
 		}
 	}
 }

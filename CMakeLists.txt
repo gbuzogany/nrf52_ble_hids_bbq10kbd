@@ -17,4 +17,4 @@ target_sources(app PRIVATE ${app_sources})
 # NORDIC SDK APP END
 
 zephyr_library_include_directories(${ZEPHYR_BASE}/samples/bluetooth)
-add_subdirectory(drivers/bbq10kbd)
+# add_subdirectory(drivers)

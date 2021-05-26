@@ -50,17 +50,11 @@
 	sda-pin = <8>; // 8, 6, 4
 	scl-pin = <6>;
 
-	// bbq10kbd@1f {
-    //     compatible = "solderparty,bbq10kbd";
-	// 	reg = <0x1f>;
-	// 	irq-gpios = <&gpio0 4 GPIO_ACTIVE_HIGH>;
-    //     label = "BBQ10KBD";
-    // };
-	bme280@76 {
-		compatible = "bosch,bme280";
-		reg = <0x76>;
-		label = "BBQ10KBD";
-	};
+	bbq10kbd@1f {
+        compatible = "solderparty,bbq10kbd";
+		reg = <0x1f>;
+        label = "BBQ10KBD";
+    };
 };
 
 &flash0 {

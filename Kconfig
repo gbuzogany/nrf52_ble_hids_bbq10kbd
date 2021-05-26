@@ -5,7 +5,7 @@
 #
 
 source "Kconfig.zephyr"
-rsource "drivers/bbq10kbd/Kconfig"
+source "drivers/sensor/bbq10kbd/Kconfig"
 
 menu "Nordic BLE HIDS Keyboard sample"
 
