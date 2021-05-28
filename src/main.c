@@ -30,6 +30,11 @@
 #include <bluetooth/services/hids.h>
 #include <bluetooth/services/dis.h>
 
+#include <usb/class/usb_hid.h>
+
+#include <logging/log.h>
+LOG_MODULE_REGISTER(main);
+
 #define DEVICE_NAME     CONFIG_BT_DEVICE_NAME
 #define DEVICE_NAME_LEN (sizeof(DEVICE_NAME) - 1)
 
@@ -45,7 +50,7 @@
 #define KEYS_MAX_LEN                    (INPUT_REPORT_KEYS_MAX_LEN - \
 					SCAN_CODE_POS)
 
-#define ADV_LED_BLINK_INTERVAL  1000
+#define SLEEP_TIME_MS  1
 
 #define ADV_STATUS_LED DK_LED1
 #define CON_STATUS_LED DK_LED2
@@ -669,7 +674,6 @@ static uint8_t button_ctrl_code(uint8_t key)
 	return 0;
 }
 
-
 static int hid_kbd_state_key_set(uint8_t key)
 {
 	uint8_t ctrl_mask = button_ctrl_code(key);
@@ -753,8 +757,6 @@ static int hid_buttons_release(const uint8_t *keys, size_t cnt)
 	return key_report_send();
 }
 
-
-
 static void num_comp_reply(bool accept)
 {
 	struct pairing_data_mitm pairing_data;
@@ -781,22 +783,6 @@ static void num_comp_reply(bool accept)
 	}
 }
 
-static void configure_gpio(void)
-{
-	int err;
-
-	// err = dk_buttons_init(button_changed);
-	// if (err) {
-	// 	printk("Cannot init buttons (err: %d)\n", err);
-	// }
-
-	// err = dk_leds_init();
-	// if (err) {
-	// 	printk("Cannot init LEDs (err: %d)\n", err);
-	// }
-}
-
-
 static void bas_notify(void)
 {
 	uint8_t battery_level = bt_bas_get_battery_level();
@@ -810,14 +796,174 @@ static void bas_notify(void)
 	bt_bas_set_battery_level(battery_level);
 }
 
+static bool symb = false;
+
+static void kb_callback(const struct device *dev, char key,
+			bool pressed, bool hold)
+{
+	bool tmp_alt = false;
+
+	if (key == 29) { // symbol
+		if (pressed) {
+			symb = true;
+		}
+		else if(!pressed) {
+			symb = false;
+		}
+		return;
+	}
+
+	uint8_t chr[1] = {0x00}; 
+
+	if(key >= 'A' && key <= 'Z') {
+		chr[0] = key - 'A' + 4;
+	}
+
+	if (symb) {
+		switch (key) {
+			case 'W':
+				chr[0] = HID_KEY_1;
+				break;
+			case 'E':
+				chr[0] = HID_KEY_2;
+				break;
+			case 'R':
+				chr[0] = HID_KEY_3;
+				break;
+			case 'S':
+				chr[0] = HID_KEY_4;
+				break;
+			case 'D':
+				chr[0] = HID_KEY_5;
+				break;
+			case 'F':
+				chr[0] = HID_KEY_6;
+				break;
+			case 'Z':
+				chr[0] = HID_KEY_7;
+				break;
+			case 'X':
+				chr[0] = HID_KEY_8;
+				break;
+			case 'C':
+				chr[0] = HID_KEY_9;
+				break;
+			case 126:
+				chr[0] = HID_KEY_0;
+				break;
+			case 'Q':
+				tmp_alt = true;
+				hid_keyboard_state.ctrl_keys_state |= HID_KBD_MODIFIER_LEFT_SHIFT;
+				chr[0] = HID_KEY_3;
+				break;
+			case 'U':
+				tmp_alt = true;
+				hid_keyboard_state.ctrl_keys_state |= HID_KBD_MODIFIER_LEFT_SHIFT;
+				chr[0] = HID_KEY_MINUS;
+				break;
+			case 'L':
+				tmp_alt = true;
+				hid_keyboard_state.ctrl_keys_state |= HID_KBD_MODIFIER_LEFT_SHIFT;
+				chr[0] = HID_KEY_APOSTROPHE;
+				break;
+			case 'P':
+				tmp_alt = true;
+				hid_keyboard_state.ctrl_keys_state |= HID_KBD_MODIFIER_LEFT_SHIFT;
+				chr[0] = HID_KEY_2;
+				break;
+			case 'H':
+				tmp_alt = true;
+				hid_keyboard_state.ctrl_keys_state |= HID_KBD_MODIFIER_LEFT_SHIFT;
+				chr[0] = HID_KEY_SEMICOLON;
+				break;
+			case 'A':
+				chr[0] = HID_KEY_KPASTERISK;
+				break;
+			case 'G':
+				chr[0] = HID_KEY_SLASH;
+				break;
+			case 'T':
+				tmp_alt = true;
+				hid_keyboard_state.ctrl_keys_state |= HID_KBD_MODIFIER_LEFT_SHIFT;
+				chr[0] = HID_KEY_9;
+				break;
+			case 'Y':
+				tmp_alt = true;
+				hid_keyboard_state.ctrl_keys_state |= HID_KBD_MODIFIER_LEFT_SHIFT;
+				chr[0] = HID_KEY_0;
+				break;
+			case 'I':
+				chr[0] = HID_KEY_MINUS;
+				break;
+			case 'O':
+				chr[0] = HID_KEY_KPPLUS;
+				break;
+			case 'K':
+				chr[0] = HID_KEY_APOSTROPHE;
+				break;
+			case 'J':
+				chr[0] = HID_KEY_SEMICOLON;
+				break;
+			case 'M':
+				chr[0] = HID_KEY_DOT;
+				break;
+			case 'N':
+				chr[0] = HID_KEY_COMMA;
+				break;
+			default:
+				break;
+		}
+	}
+	
+	switch (key) {
+		case 10: // enter
+			chr[0] = HID_KEY_ENTER;
+			break;
+		case 8: // backspace
+			chr[0] = HID_KEY_BACKSPACE;
+			break;
+		case 27: // left shift
+			chr[0] = 225;
+			break;
+		case 28: // right shift
+			chr[0] = 225;
+			break;
+		case 26: // alt
+			chr[0] = 225;
+			break;
+		case 32: // space
+			chr[0] = HID_KEY_SPACE;
+			break;
+		default:
+			printk("unknown key: %d\n", key);
+	}
+
+	printk("C: (%d) ", key);
+
+	if (chr[0] != 0) {
+		if (pressed && !hold) {
+			printk("pressed");
+			hid_buttons_press(chr, 1);
+		}
+		else if (pressed && hold) {
+			printk("hold");
+		}
+		else if (!pressed && !hold) {
+			hid_buttons_release(chr, 1);
+			printk("released");
+		}
+	}
+	if (tmp_alt) {
+		hid_keyboard_state.ctrl_keys_state &= ~HID_KBD_MODIFIER_LEFT_SHIFT;
+		chr[0] = 225;
+		hid_buttons_release(chr, 1);
+	}
+}
 
 void main(void)
 {
 	int err;
-
 	printk("Starting Bluetooth Peripheral HIDS keyboard example\n");
-
-	configure_gpio();
 
 	const struct device* kb = device_get_binding("BBQ10KBD");
 	if (kb == NULL)
@@ -825,9 +971,10 @@ void main(void)
 		printk("Failed to get KB device binding\n");
 	}
 
-	keyboard_set_backlight(kb, 0x01);
+	keyboard_config(kb, kb_callback);
+	keyboard_set_backlight(kb, 0x00);
 
-	// LOG_INF("device is %p, name is %s", kb, log_strdup(kb->name));
+	LOG_INF("device is %p, name is %s", kb, log_strdup(kb->name));
 
 	bt_conn_cb_register(&conn_callbacks);
 	bt_conn_auth_cb_register(&conn_auth_callbacks);
@@ -851,8 +998,6 @@ void main(void)
 	k_work_init(&pairing_work, pairing_process);
 
 	for (;;) {
-		k_sleep(K_MSEC(ADV_LED_BLINK_INTERVAL));
-		/* Battery level simulation */
-		bas_notify();
+		k_sleep(K_MSEC(SLEEP_TIME_MS));
 	}
 }
