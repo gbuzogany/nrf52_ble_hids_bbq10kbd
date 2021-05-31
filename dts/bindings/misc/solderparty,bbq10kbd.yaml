@@ -1,0 +1,16 @@
+# Copyright (c) 2018, NXP
+# SPDX-License-Identifier: Apache-2.0
+
+description: BBQ10KBD PMOD Keyboard
+
+compatible: "solderparty,bbq10kbd"
+
+include: i2c-device.yaml
+
+properties:
+    int1-gpios:
+      type: phandle-array
+      required: true
+      description: INT1 pin
+        This pin defaults to active low when produced by the sensor.
+

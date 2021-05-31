@@ -31,7 +31,9 @@
 			"system_error": "c",
 			"tuple": "c",
 			"utility": "c",
-			"bluetooth.h": "c"
+			"bluetooth.h": "c",
+			"bbq10kbd_api.h": "c",
+			"dis.h": "c"
 		}
 	}
 }

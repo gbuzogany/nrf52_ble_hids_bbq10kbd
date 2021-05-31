@@ -13,7 +13,7 @@
 #include <zephyr.h>
 #include <drivers/gpio.h>
 #include <drivers/sensor.h>
-#include <drivers/keyboard.h>
+#include "bbq10kbd_api.h"
 #include <soc.h>
 #include <assert.h>
 #include <spinlock.h>
@@ -138,17 +138,6 @@ static struct conn_mode {
 	struct bt_conn *conn;
 	bool in_boot_mode;
 } conn_mode[CONFIG_BT_HIDS_MAX_CLIENT_COUNT];
-
-static const uint8_t hello_world_str[] = {
-	0x0b,	/* Key h */
-	0x08,	/* Key e */
-	0x0f,	/* Key l */
-	0x0f,	/* Key l */
-	0x12,	/* Key o */
-	0x28,	/* Key Return */
-};
-
-static const uint8_t shift_key[] = { 225 };
 
 /* Current report status
  */
@@ -783,19 +772,6 @@ static void num_comp_reply(bool accept)
 	}
 }
 
-static void bas_notify(void)
-{
-	uint8_t battery_level = bt_bas_get_battery_level();
-
-	battery_level--;
-
-	if (!battery_level) {
-		battery_level = 100U;
-	}
-
-	bt_bas_set_battery_level(battery_level);
-}
-
 static bool symb = false;
 
 static void kb_callback(const struct device *dev, char key,
@@ -817,6 +793,15 @@ static void kb_callback(const struct device *dev, char key,
 
 	if(key >= 'A' && key <= 'Z') {
 		chr[0] = key - 'A' + 4;
+	}
+
+	if (key == 'T' && pressed == true) {
+		if (hold == false) {
+			return;
+		}
+		else {
+			hold = false;
+		}
 	}
 
 	if (symb) {
@@ -910,6 +895,16 @@ static void kb_callback(const struct device *dev, char key,
 			case 'N':
 				chr[0] = HID_KEY_COMMA;
 				break;
+			case 'V':
+				tmp_alt = true;
+				hid_keyboard_state.ctrl_keys_state |= HID_KBD_MODIFIER_LEFT_SHIFT;
+				chr[0] = HID_KEY_SLASH;
+				break;
+			case 'B':
+				tmp_alt = true;
+				hid_keyboard_state.ctrl_keys_state |= HID_KBD_MODIFIER_LEFT_SHIFT;
+				chr[0] = HID_KEY_1;
+				break;
 			default:
 				break;
 		}
@@ -971,8 +966,8 @@ void main(void)
 		printk("Failed to get KB device binding\n");
 	}
 
-	keyboard_config(kb, kb_callback);
-	keyboard_set_backlight(kb, 0x00);
+	bbq10kbd_config(kb, kb_callback);
+	bbq10kbd_set_backlight(kb, 0x00);
 
 	LOG_INF("device is %p, name is %s", kb, log_strdup(kb->name));
 

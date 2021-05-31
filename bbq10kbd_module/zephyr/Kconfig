@@ -1,0 +1,7 @@
+# SPDX-License-Identifier: Apache-2.0
+
+config BBQ10KBD_DRIVER
+	bool "BBQ10KBD i2c keyboard driver"
+	depends on I2C
+	help
+	  Enable driver for BBQ10KBD I2C-based keyboard.
