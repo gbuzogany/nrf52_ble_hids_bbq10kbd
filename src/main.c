@@ -795,15 +795,6 @@ static void kb_callback(const struct device *dev, char key,
 		chr[0] = key - 'A' + 4;
 	}
 
-	if (key == 'T' && pressed == true) {
-		if (hold == false) {
-			return;
-		}
-		else {
-			hold = false;
-		}
-	}
-
 	if (symb) {
 		switch (key) {
 			case 'W':
